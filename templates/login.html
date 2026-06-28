@@ -13,6 +13,9 @@
         </div>
 
         <div class="auth-card">
+            {% if success %}
+            <div class="auth-success">{{ success }}</div>
+            {% endif %}
             {% if error %}
             <div class="auth-error">{{ error }}</div>
             {% endif %}
