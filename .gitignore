@@ -5,5 +5,4 @@ __pycache__/
 *.pyo
 .env
 .DS_Store
-.claude/
 first session history.md

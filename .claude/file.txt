@@ -1,0 +1,8 @@
+Add two links to the footer in @templates/base.html:
+- "Terms and Conditions"
+- "Privacy and Policy"
+
+Both should be plain text links, no special styling needed for now
+Point both to "#" as placeholder hrefs since pages dont exists yet.
+
+Donot modify anything else on the page.
