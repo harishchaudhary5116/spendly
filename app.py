@@ -1,16 +1,20 @@
 import os
 import re
 import sqlite3
-from datetime import datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
 from database.db import (
     authenticate_user,
     create_user,
-    get_user_by_id,
     init_db,
     seed_db,
+)
+from database.queries import (
+    get_category_breakdown,
+    get_recent_transactions,
+    get_summary_stats,
+    get_user_by_id,
 )
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -154,15 +158,22 @@ def profile():
         session.clear()
         return redirect(url_for("login"))
 
-    member_since = None
-    if user["created_at"]:
-        try:
-            dt = datetime.strptime(user["created_at"], "%Y-%m-%d %H:%M:%S")
-            member_since = dt.strftime("%B %Y")
-        except ValueError:
-            member_since = None
+    # === SUBAGENT 1: TRANSACTIONS ===
+    transactions = get_recent_transactions(user_id)
 
-    return render_template("profile.html", user=user, member_since=member_since)
+    # === SUBAGENT 2: SUMMARY ===
+    stats = get_summary_stats(user_id)
+
+    # === SUBAGENT 3: CATEGORIES ===
+    breakdown = get_category_breakdown(user_id)
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        breakdown=breakdown,
+    )
 
 
 @app.route("/expenses/add")

@@ -125,13 +125,3 @@ def authenticate_user(email, password):
     return row
 
 
-def get_user_by_id(user_id):
-    conn = get_db()
-    try:
-        row = conn.execute(
-            "SELECT id, name, email, created_at FROM users WHERE id = ?",
-            (user_id,),
-        ).fetchone()
-    finally:
-        conn.close()
-    return row
