@@ -95,3 +95,15 @@ def seed_db():
         conn.commit()
     finally:
         conn.close()
+
+
+def create_user(name, email, password):
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            (name, email, generate_password_hash(password, method="pbkdf2:sha256")),
+        )
+        conn.commit()
+    finally:
+        conn.close()
