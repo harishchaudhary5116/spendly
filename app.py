@@ -1,10 +1,17 @@
 import os
 import re
 import sqlite3
+from datetime import datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
-from database.db import authenticate_user, create_user, init_db, seed_db
+from database.db import (
+    authenticate_user,
+    create_user,
+    get_user_by_id,
+    init_db,
+    seed_db,
+)
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -23,11 +30,15 @@ with app.app_context():
 
 @app.route("/")
 def landing():
+    if session.get("user_id"):
+        return redirect(url_for("profile"))
     return render_template("landing.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if session.get("user_id"):
+        return redirect(url_for("profile"))
     if request.method == "GET":
         return render_template("register.html")
 
@@ -79,6 +90,8 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("user_id"):
+        return redirect(url_for("profile"))
     if request.method == "GET":
         success = (
             "Account created — please sign in."
@@ -132,7 +145,24 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    user = get_user_by_id(user_id)
+    if user is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    member_since = None
+    if user["created_at"]:
+        try:
+            dt = datetime.strptime(user["created_at"], "%Y-%m-%d %H:%M:%S")
+            member_since = dt.strftime("%B %Y")
+        except ValueError:
+            member_since = None
+
+    return render_template("profile.html", user=user, member_since=member_since)
 
 
 @app.route("/expenses/add")

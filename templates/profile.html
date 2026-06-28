@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="profile-section">
+    <div class="profile-container">
+
+        <div class="profile-card">
+            <div class="profile-avatar">{{ user.name[:1]|upper }}</div>
+            <h1 class="profile-name">{{ user.name }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+            {% if member_since %}
+            <p class="profile-meta">Member since {{ member_since }}</p>
+            {% endif %}
+        </div>
+
+        <div class="placeholder-section">
+            <h2 class="placeholder-heading">Coming soon</h2>
+            <div class="placeholder-grid">
+                <div class="placeholder-tile">
+                    <span class="placeholder-tile-icon">+</span>
+                    <span class="placeholder-tile-title">Add expense</span>
+                    <span class="placeholder-tile-step">Step 7</span>
+                </div>
+                <div class="placeholder-tile">
+                    <span class="placeholder-tile-icon">✎</span>
+                    <span class="placeholder-tile-title">Edit expense</span>
+                    <span class="placeholder-tile-step">Step 8</span>
+                </div>
+                <div class="placeholder-tile">
+                    <span class="placeholder-tile-icon">×</span>
+                    <span class="placeholder-tile-title">Delete expense</span>
+                    <span class="placeholder-tile-step">Step 9</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="profile-signout">
+            Signed in as {{ user.email }} ·
+            <a href="{{ url_for('logout') }}">Sign out</a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}
