@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 DB_PATH = os.path.join(
@@ -107,3 +107,19 @@ def create_user(name, email, password):
         conn.commit()
     finally:
         conn.close()
+
+
+def authenticate_user(email, password):
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT id, name, password_hash FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return None
+    if not check_password_hash(row["password_hash"], password):
+        return None
+    return row
