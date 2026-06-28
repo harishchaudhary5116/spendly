@@ -11,31 +11,60 @@
             <div class="profile-avatar">{{ user.name[:1]|upper }}</div>
             <h1 class="profile-name">{{ user.name }}</h1>
             <p class="profile-email">{{ user.email }}</p>
-            {% if member_since %}
-            <p class="profile-meta">Member since {{ member_since }}</p>
+            {% if user.member_since %}
+            <p class="profile-meta">Member since {{ user.member_since }}</p>
             {% endif %}
         </div>
 
-        <div class="placeholder-section">
-            <h2 class="placeholder-heading">Coming soon</h2>
-            <div class="placeholder-grid">
-                <div class="placeholder-tile">
-                    <span class="placeholder-tile-icon">+</span>
-                    <span class="placeholder-tile-title">Add expense</span>
-                    <span class="placeholder-tile-step">Step 7</span>
-                </div>
-                <div class="placeholder-tile">
-                    <span class="placeholder-tile-icon">✎</span>
-                    <span class="placeholder-tile-title">Edit expense</span>
-                    <span class="placeholder-tile-step">Step 8</span>
-                </div>
-                <div class="placeholder-tile">
-                    <span class="placeholder-tile-icon">×</span>
-                    <span class="placeholder-tile-title">Delete expense</span>
-                    <span class="placeholder-tile-step">Step 9</span>
-                </div>
+        <div class="summary-card">
+            <div class="summary-stat">
+                <span class="stat-label">Total spent</span>
+                <span class="stat-value">₹{{ "%.2f"|format(stats.total_spent) }}</span>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Transactions</span>
+                <span class="stat-value">{{ stats.transaction_count }}</span>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Top category</span>
+                <span class="stat-value">{{ stats.top_category }}</span>
             </div>
         </div>
+
+        <section class="dashboard-section">
+            <h2 class="section-heading">By category</h2>
+            {% if breakdown %}
+            <ul class="breakdown-list">
+                {% for cat in breakdown %}
+                <li class="breakdown-row">
+                    <span class="breakdown-name">{{ cat.name }}</span>
+                    <span class="breakdown-amount">₹{{ "%.2f"|format(cat.amount) }}</span>
+                    <span class="breakdown-pct">{{ cat.pct }}%</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-state">No spending categorised yet.</p>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-section">
+            <h2 class="section-heading">Recent transactions</h2>
+            {% if transactions %}
+            <ul class="transactions-list">
+                {% for tx in transactions %}
+                <li class="transaction-row">
+                    <span class="tx-date">{{ tx.date }}</span>
+                    <span class="tx-category">{{ tx.category }}</span>
+                    <span class="tx-description">{{ tx.description }}</span>
+                    <span class="tx-amount">₹{{ "%.2f"|format(tx.amount) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-state">No transactions yet.</p>
+            {% endif %}
+        </section>
 
         <p class="profile-signout">
             Signed in as {{ user.email }} ·
