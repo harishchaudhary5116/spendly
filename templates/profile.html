@@ -16,6 +16,38 @@
             {% endif %}
         </div>
 
+        <section class="date-filter">
+            <div class="date-filter-presets">
+                <a class="date-filter-preset {% if active_preset == 'this_month' %}is-active{% endif %}"
+                   href="{{ preset_urls.this_month }}">This month</a>
+                <a class="date-filter-preset {% if active_preset == 'last_30' %}is-active{% endif %}"
+                   href="{{ preset_urls.last_30 }}">Last 30 days</a>
+                <a class="date-filter-preset {% if active_preset == 'all_time' %}is-active{% endif %}"
+                   href="{{ preset_urls.all_time }}">All time</a>
+            </div>
+
+            <form class="date-filter-form" method="get" action="{{ url_for('profile') }}">
+                <div class="form-group">
+                    <label for="start_date">From</label>
+                    <input type="date" id="start_date" name="start_date"
+                           value="{{ start_value }}" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">To</label>
+                    <input type="date" id="end_date" name="end_date"
+                           value="{{ end_value }}" class="form-input">
+                </div>
+                <div class="date-filter-actions">
+                    <button type="submit" class="btn-primary">Apply</button>
+                    <a class="btn-ghost" href="{{ url_for('profile') }}">Clear</a>
+                </div>
+            </form>
+
+            {% if filter_caption %}
+            <p class="date-filter-caption">Showing {{ filter_caption }}</p>
+            {% endif %}
+        </section>
+
         <div class="summary-card">
             <div class="summary-stat">
                 <span class="stat-label">Total spent</span>
