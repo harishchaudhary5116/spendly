@@ -839,6 +839,72 @@ a { color: inherit; text-decoration: none; }
 
 .profile-signout a:hover { text-decoration: underline; }
 
+.date-filter {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.date-filter-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.date-filter-preset {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.date-filter-preset:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.date-filter-preset.is-active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.date-filter-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.date-filter-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.date-filter-actions .btn-ghost {
+    color: var(--ink-soft);
+    text-decoration: none;
+}
+
+.date-filter-actions .btn-ghost:hover {
+    color: var(--ink);
+}
+
+.date-filter-caption {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin-top: 0.75rem;
+}
+
 @media (max-width: 640px) {
     .summary-card { grid-template-columns: 1fr; }
     .profile-section { padding: 2.5rem 1rem 3rem; }
@@ -846,4 +912,5 @@ a { color: inherit; text-decoration: none; }
     .transaction-row { grid-template-columns: 1fr auto; }
     .transaction-row .tx-date,
     .transaction-row .tx-category { grid-column: 1 / -1; }
+    .date-filter-form { grid-template-columns: 1fr; }
 }

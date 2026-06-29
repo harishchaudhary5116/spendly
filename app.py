@@ -1,6 +1,7 @@
 import os
 import re
 import sqlite3
+from datetime import date, datetime, timedelta
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
@@ -147,6 +148,74 @@ def logout():
     return redirect(url_for("landing"))
 
 
+def _parse_date(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _fmt_day(d):
+    return f"{d.day} {d.strftime('%b %Y')}"
+
+
+def _build_filter_context(raw_start, raw_end):
+    start = _parse_date(raw_start)
+    end = _parse_date(raw_end)
+
+    if (raw_start and start is None) or (raw_end and end is None):
+        start = end = None
+    elif start and end and start > end:
+        start = end = None
+
+    start_str = start.isoformat() if start else None
+    end_str = end.isoformat() if end else None
+
+    today = date.today()
+    this_month_start = today.replace(day=1).isoformat()
+    last_30_start = (today - timedelta(days=29)).isoformat()
+    today_iso = today.isoformat()
+
+    preset_urls = {
+        "this_month": url_for(
+            "profile", start_date=this_month_start, end_date=today_iso
+        ),
+        "last_30": url_for(
+            "profile", start_date=last_30_start, end_date=today_iso
+        ),
+        "all_time": url_for("profile"),
+    }
+
+    if start_str is None and end_str is None:
+        active_preset = "all_time"
+    elif (start_str, end_str) == (this_month_start, today_iso):
+        active_preset = "this_month"
+    elif (start_str, end_str) == (last_30_start, today_iso):
+        active_preset = "last_30"
+    else:
+        active_preset = None
+
+    filter_caption = None
+    if start and end:
+        filter_caption = f"{_fmt_day(start)} → {_fmt_day(end)}"
+    elif start:
+        filter_caption = f"from {_fmt_day(start)}"
+    elif end:
+        filter_caption = f"up to {_fmt_day(end)}"
+
+    return {
+        "start_str": start_str,
+        "end_str": end_str,
+        "start_value": start_str or "",
+        "end_value": end_str or "",
+        "preset_urls": preset_urls,
+        "active_preset": active_preset,
+        "filter_caption": filter_caption,
+    }
+
+
 @app.route("/profile")
 def profile():
     user_id = session.get("user_id")
@@ -158,21 +227,28 @@ def profile():
         session.clear()
         return redirect(url_for("login"))
 
-    # === SUBAGENT 1: TRANSACTIONS ===
-    transactions = get_recent_transactions(user_id)
-
-    # === SUBAGENT 2: SUMMARY ===
-    stats = get_summary_stats(user_id)
-
-    # === SUBAGENT 3: CATEGORIES ===
-    breakdown = get_category_breakdown(user_id)
+    ctx = _build_filter_context(
+        request.args.get("start_date", "").strip()[:10],
+        request.args.get("end_date", "").strip()[:10],
+    )
 
     return render_template(
         "profile.html",
         user=user,
-        stats=stats,
-        transactions=transactions,
-        breakdown=breakdown,
+        stats=get_summary_stats(
+            user_id, start_date=ctx["start_str"], end_date=ctx["end_str"]
+        ),
+        transactions=get_recent_transactions(
+            user_id, start_date=ctx["start_str"], end_date=ctx["end_str"]
+        ),
+        breakdown=get_category_breakdown(
+            user_id, start_date=ctx["start_str"], end_date=ctx["end_str"]
+        ),
+        start_value=ctx["start_value"],
+        end_value=ctx["end_value"],
+        preset_urls=ctx["preset_urls"],
+        active_preset=ctx["active_preset"],
+        filter_caption=ctx["filter_caption"],
     )
 
 
