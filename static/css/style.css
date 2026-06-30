@@ -102,6 +102,7 @@ a { color: inherit; text-decoration: none; }
 
 .nav-links a { color: var(--ink-muted); transition: color 0.2s; }
 .nav-links a:hover { color: var(--ink); }
+.nav-links a.is-active { color: var(--ink); font-weight: 600; }
 
 .nav-cta {
     background: var(--ink) !important;
@@ -913,4 +914,113 @@ a { color: inherit; text-decoration: none; }
     .transaction-row .tx-date,
     .transaction-row .tx-category { grid-column: 1 / -1; }
     .date-filter-form { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Analytics — coming soon                                             */
+/* ------------------------------------------------------------------ */
+
+.analytics-section {
+    padding: 5rem 2rem 6rem;
+    display: flex;
+    justify-content: center;
+}
+
+.analytics-card {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 440px;
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2.5rem 2.5rem;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(15, 15, 15, 0.06);
+}
+
+.analytics-card-blob {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: var(--paper-warm);
+    border-radius: 50%;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.analytics-card-blob--tr { top: -60px; right: -60px; }
+.analytics-card-blob--bl { bottom: -60px; left: -60px; }
+
+.analytics-icon {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 1.5rem;
+    border-radius: 12px;
+    background: var(--accent);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.analytics-badge {
+    position: relative;
+    display: inline-block;
+    background: var(--accent);
+    color: var(--paper);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+}
+
+.analytics-title {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    color: var(--ink);
+    margin-bottom: 0.85rem;
+}
+
+.analytics-body {
+    position: relative;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    max-width: 320px;
+    margin: 0 auto 1.75rem;
+}
+
+.analytics-dots {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-bottom: 1.25rem;
+}
+
+.analytics-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.55;
+}
+
+.analytics-footnote {
+    position: relative;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+@media (max-width: 640px) {
+    .analytics-section { padding: 3rem 1rem 4rem; }
+    .analytics-card { padding: 2.5rem 1.5rem 2rem; }
 }

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="analytics-section">
+    <div class="analytics-card">
+        <span class="analytics-card-blob analytics-card-blob--tr" aria-hidden="true"></span>
+        <span class="analytics-card-blob analytics-card-blob--bl" aria-hidden="true"></span>
+
+        <div class="analytics-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <polyline points="12 7 12 12 15.5 14"></polyline>
+            </svg>
+        </div>
+
+        <span class="analytics-badge">Coming Soon</span>
+
+        <h1 class="analytics-title">Advanced Analytics</h1>
+
+        <p class="analytics-body">
+            A richer view of your spending is on the way. Soon you'll see category
+            trends, monthly comparisons and budget forecasts — all in one place.
+        </p>
+
+        <div class="analytics-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </div>
+
+        <p class="analytics-footnote">Currently in development</p>
+    </div>
+</section>
+
+{% endblock %}
