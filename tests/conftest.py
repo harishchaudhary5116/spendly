@@ -119,9 +119,18 @@ def client(tmp_db):
         yield c
 
 
+TEST_CSRF_TOKEN = "test-csrf-token"
+
+
 @pytest.fixture
 def auth_client(client, tmp_db):
-    """Flask test client that is already logged in as the test user."""
+    """Flask test client that is already logged in as the test user.
+
+    A known CSRF token is seeded into the session and every POST issued
+    through ``auth_client.post(...)`` auto-attaches it (unless the caller
+    explicitly supplies a ``csrf_token`` value in ``data``). This keeps
+    test bodies focused on feature behaviour rather than CSRF plumbing.
+    """
     resp = client.post(
         "/login",
         data={"email": tmp_db["email"], "password": tmp_db["password"]},
@@ -131,4 +140,17 @@ def auth_client(client, tmp_db):
     assert resp.status_code == 302, (
         f"Login fixture failed — expected 302, got {resp.status_code}"
     )
+
+    with client.session_transaction() as sess:
+        sess["csrf_token"] = TEST_CSRF_TOKEN
+
+    original_post = client.post
+
+    def post_with_csrf(*args, **kwargs):
+        data = kwargs.get("data")
+        if isinstance(data, dict) and "csrf_token" not in data:
+            kwargs["data"] = {**data, "csrf_token": TEST_CSRF_TOKEN}
+        return original_post(*args, **kwargs)
+
+    client.post = post_with_csrf
     return client

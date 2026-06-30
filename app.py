@@ -1,12 +1,17 @@
+import hmac
+import math
 import os
 import re
+import secrets
 import sqlite3
 from datetime import date, datetime, timedelta
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
 from database.db import (
+    CATEGORIES,
     authenticate_user,
+    create_expense,
     create_user,
     init_db,
     seed_db,
@@ -148,6 +153,21 @@ def logout():
     return redirect(url_for("landing"))
 
 
+def _get_csrf_token():
+    token = session.get("csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_token"] = token
+    return token
+
+
+def _csrf_valid(submitted):
+    expected = session.get("csrf_token")
+    if not expected or not submitted:
+        return False
+    return hmac.compare_digest(expected, submitted)
+
+
 def _parse_date(value):
     if not value:
         return None
@@ -175,25 +195,31 @@ def _build_filter_context(raw_start, raw_end):
 
     today = date.today()
     this_month_start = today.replace(day=1).isoformat()
-    last_30_start = (today - timedelta(days=29)).isoformat()
+    last_3_start = (today - timedelta(days=90)).isoformat()
+    last_6_start = (today - timedelta(days=180)).isoformat()
     today_iso = today.isoformat()
 
     preset_urls = {
+        "all_time": url_for("profile"),
         "this_month": url_for(
             "profile", start_date=this_month_start, end_date=today_iso
         ),
-        "last_30": url_for(
-            "profile", start_date=last_30_start, end_date=today_iso
+        "last_3_months": url_for(
+            "profile", start_date=last_3_start, end_date=today_iso
         ),
-        "all_time": url_for("profile"),
+        "last_6_months": url_for(
+            "profile", start_date=last_6_start, end_date=today_iso
+        ),
     }
 
-    if start_str is None and end_str is None:
-        active_preset = "all_time"
-    elif (start_str, end_str) == (this_month_start, today_iso):
+    if (start_str, end_str) == (this_month_start, today_iso):
         active_preset = "this_month"
-    elif (start_str, end_str) == (last_30_start, today_iso):
-        active_preset = "last_30"
+    elif (start_str, end_str) == (last_3_start, today_iso):
+        active_preset = "last_3_months"
+    elif (start_str, end_str) == (last_6_start, today_iso):
+        active_preset = "last_6_months"
+    elif start_str is None and end_str is None:
+        active_preset = "all_time"
     else:
         active_preset = None
 
@@ -252,9 +278,83 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/analytics")
+def analytics():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    return render_template("analytics.html")
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    today_iso = date.today().isoformat()
+    csrf_token = _get_csrf_token()
+
+    if request.method == "GET":
+        return render_template(
+            "add_expense.html",
+            categories=CATEGORIES,
+            amount="",
+            category="Food",
+            expense_date=today_iso,
+            description="",
+            csrf_token=csrf_token,
+        )
+
+    if not _csrf_valid(request.form.get("csrf_token")):
+        return redirect(url_for("add_expense"))
+
+    raw_amount = request.form.get("amount", "").strip()
+    raw_category = request.form.get("category", "").strip()
+    raw_date = request.form.get("date", "").strip()
+    raw_description = request.form.get("description", "").strip()
+
+    def _render_error(msg):
+        return render_template(
+            "add_expense.html",
+            categories=CATEGORIES,
+            error=msg,
+            amount=raw_amount,
+            category=raw_category or "Food",
+            expense_date=raw_date or today_iso,
+            description=raw_description,
+            csrf_token=csrf_token,
+        )
+
+    try:
+        amount_val = float(raw_amount)
+    except ValueError:
+        return _render_error("Please enter a valid amount.")
+    if not math.isfinite(amount_val):
+        return _render_error("Please enter a valid amount.")
+    if amount_val <= 0 or amount_val > 9_999_999.99:
+        return _render_error(
+            "Amount must be greater than 0 and at most ₹9,999,999.99."
+        )
+
+    if raw_category not in CATEGORIES:
+        return _render_error("Please choose a valid category.")
+
+    parsed_date = _parse_date(raw_date)
+    if parsed_date is None or parsed_date > date.today():
+        return _render_error(
+            "Please enter a valid date that is not in the future."
+        )
+
+    description_val = raw_description[:200] if raw_description else None
+
+    create_expense(
+        user_id,
+        amount_val,
+        raw_category,
+        parsed_date.isoformat(),
+        description_val,
+    )
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/edit")

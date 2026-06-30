@@ -9,38 +9,35 @@
 
         <div class="profile-card">
             <div class="profile-avatar">{{ user.name[:1]|upper }}</div>
-            <h1 class="profile-name">{{ user.name }}</h1>
-            <p class="profile-email">{{ user.email }}</p>
-            {% if user.member_since %}
-            <p class="profile-meta">Member since {{ user.member_since }}</p>
-            {% endif %}
+            <div class="profile-card-text">
+                <h1 class="profile-name">{{ user.name }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+                {% if user.member_since %}
+                <p class="profile-meta">Member since {{ user.member_since }}</p>
+                {% endif %}
+            </div>
         </div>
 
         <section class="date-filter">
-            <div class="date-filter-presets">
-                <a class="date-filter-preset {% if active_preset == 'this_month' %}is-active{% endif %}"
-                   href="{{ preset_urls.this_month }}">This month</a>
-                <a class="date-filter-preset {% if active_preset == 'last_30' %}is-active{% endif %}"
-                   href="{{ preset_urls.last_30 }}">Last 30 days</a>
-                <a class="date-filter-preset {% if active_preset == 'all_time' %}is-active{% endif %}"
-                   href="{{ preset_urls.all_time }}">All time</a>
-            </div>
-
             <form class="date-filter-form" method="get" action="{{ url_for('profile') }}">
-                <div class="form-group">
-                    <label for="start_date">From</label>
+                <div class="date-filter-presets">
+                    <a class="date-filter-preset {% if active_preset == 'all_time' %}is-active{% endif %}"
+                       href="{{ preset_urls.all_time }}">All Time</a>
+                    <a class="date-filter-preset {% if active_preset == 'this_month' %}is-active{% endif %}"
+                       href="{{ preset_urls.this_month }}">This Month</a>
+                    <a class="date-filter-preset {% if active_preset == 'last_3_months' %}is-active{% endif %}"
+                       href="{{ preset_urls.last_3_months }}">Last 3 Months</a>
+                    <a class="date-filter-preset {% if active_preset == 'last_6_months' %}is-active{% endif %}"
+                       href="{{ preset_urls.last_6_months }}">Last 6 Months</a>
+                </div>
+                <div class="date-filter-range">
                     <input type="date" id="start_date" name="start_date"
-                           value="{{ start_value }}" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label for="end_date">To</label>
+                           value="{{ start_value }}" class="form-input" aria-label="From date">
+                    <span class="date-filter-sep">to</span>
                     <input type="date" id="end_date" name="end_date"
-                           value="{{ end_value }}" class="form-input">
+                           value="{{ end_value }}" class="form-input" aria-label="To date">
                 </div>
-                <div class="date-filter-actions">
-                    <button type="submit" class="btn-primary">Apply</button>
-                    <a class="btn-ghost" href="{{ url_for('profile') }}">Clear</a>
-                </div>
+                <button type="submit" class="btn-primary date-filter-apply">Apply</button>
             </form>
 
             {% if filter_caption %}
@@ -63,40 +60,61 @@
             </div>
         </div>
 
-        <section class="dashboard-section">
-            <h2 class="section-heading">By category</h2>
-            {% if breakdown %}
-            <ul class="breakdown-list">
-                {% for cat in breakdown %}
-                <li class="breakdown-row">
-                    <span class="breakdown-name">{{ cat.name }}</span>
-                    <span class="breakdown-amount">₹{{ "%.2f"|format(cat.amount) }}</span>
-                    <span class="breakdown-pct">{{ cat.pct }}%</span>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p class="empty-state">No spending categorised yet.</p>
-            {% endif %}
-        </section>
+        <div class="dashboard-grid">
+            <section class="dashboard-section dashboard-section--main">
+                <div class="section-header">
+                    <h2 class="section-heading">Recent transactions</h2>
+                    <a class="btn-primary section-action" href="{{ url_for('add_expense') }}">+ Add Expense</a>
+                </div>
+                {% if transactions %}
+                <ul class="transactions-list">
+                    <li class="transactions-header">
+                        <span>Date</span>
+                        <span>Description</span>
+                        <span>Category</span>
+                        <span class="transactions-header-amount">Amount</span>
+                    </li>
+                    {% for tx in transactions %}
+                    <li class="transaction-row">
+                        <span class="tx-date">{{ tx.date }}</span>
+                        <span class="tx-description">{{ tx.description }}</span>
+                        <span class="tx-category">
+                            <span class="tx-pill tx-pill--{{ tx.category|lower }}">{{ tx.category }}</span>
+                        </span>
+                        <span class="tx-amount">₹{{ "%.2f"|format(tx.amount) }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="empty-state">No transactions yet.</p>
+                {% endif %}
+            </section>
 
-        <section class="dashboard-section">
-            <h2 class="section-heading">Recent transactions</h2>
-            {% if transactions %}
-            <ul class="transactions-list">
-                {% for tx in transactions %}
-                <li class="transaction-row">
-                    <span class="tx-date">{{ tx.date }}</span>
-                    <span class="tx-category">{{ tx.category }}</span>
-                    <span class="tx-description">{{ tx.description }}</span>
-                    <span class="tx-amount">₹{{ "%.2f"|format(tx.amount) }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p class="empty-state">No transactions yet.</p>
-            {% endif %}
-        </section>
+            <section class="dashboard-section dashboard-section--side">
+                <h2 class="section-heading">By category</h2>
+                {% if breakdown %}
+                <ul class="breakdown-list">
+                    {% for cat in breakdown %}
+                    <li class="breakdown-row breakdown-row--{{ cat.name|lower }}">
+                        <div class="breakdown-meta">
+                            <span class="breakdown-name">{{ cat.name }}</span>
+                            <span class="breakdown-value">
+                                <span class="breakdown-amount">₹{{ "%.2f"|format(cat.amount) }}</span>
+                                <span class="breakdown-percent">{{ cat.pct }}%</span>
+                            </span>
+                        </div>
+                        <div class="breakdown-bar" aria-hidden="true">
+                            <div class="breakdown-bar-fill"
+                                 style="width: {{ cat.pct }}%"></div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="empty-state">No spending categorised yet.</p>
+                {% endif %}
+            </section>
+        </div>
 
         <p class="profile-signout">
             Signed in as {{ user.email }} ·
