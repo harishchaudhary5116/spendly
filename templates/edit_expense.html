@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Edit expense — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="edit-expense-section">
+    <div class="edit-expense-container">
+
+        <div class="edit-expense-header">
+            <h1 class="edit-expense-title">Edit expense</h1>
+            <p class="edit-expense-subtitle">Update this transaction in ₹</p>
+        </div>
+
+        <div class="edit-expense-card">
+            {% if error %}
+            <div class="form-error">{{ error }}</div>
+            {% endif %}
+
+            <form class="edit-expense-form" method="POST" action="{{ url_for('edit_expense', id=expense.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <div class="edit-expense-amount-wrap">
+                        <span class="edit-expense-amount-prefix">₹</span>
+                        <input type="number" id="amount" name="amount"
+                               class="form-input edit-expense-amount-input"
+                               step="0.01" min="0.01" max="9999999.99"
+                               placeholder="0.00"
+                               value="{{ amount or '' }}"
+                               required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="form-input" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if cat == category %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date"
+                           class="form-input"
+                           value="{{ expense_date }}"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description <span class="form-optional">(optional)</span></label>
+                    <input type="text" id="description" name="description"
+                           class="form-input" maxlength="200"
+                           placeholder="What was this for?"
+                           value="{{ description or '' }}">
+                </div>
+
+                <div class="edit-expense-actions">
+                    <button type="submit" class="btn-primary">Save changes</button>
+                    <a class="btn-ghost" href="{{ url_for('profile') }}">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

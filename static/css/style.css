@@ -882,13 +882,13 @@ a { color: inherit; text-decoration: none; }
 .breakdown-row--other         .breakdown-bar-fill { background: var(--cat-other-bar); }
 
 .transaction-row {
-    grid-template-columns: 6rem 1fr 8rem 7rem;
+    grid-template-columns: 6rem 1fr 8rem 7rem 4rem;
     gap: 1.25rem;
 }
 
 .transactions-header {
     display: grid;
-    grid-template-columns: 6rem 1fr 8rem 7rem;
+    grid-template-columns: 6rem 1fr 8rem 7rem 4rem;
     gap: 1.25rem;
     padding: 0 0 0.6rem;
     border-bottom: 1px solid var(--border);
@@ -901,6 +901,29 @@ a { color: inherit; text-decoration: none; }
 
 .transactions-header-amount {
     text-align: right;
+}
+
+.transactions-header-actions {
+    text-align: right;
+}
+
+.tx-actions {
+    text-align: right;
+}
+
+.tx-edit-link {
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.tx-edit-link:hover,
+.tx-edit-link:focus {
+    color: var(--accent-2);
+    border-bottom-color: var(--accent-2);
 }
 
 .tx-date {
@@ -1162,38 +1185,44 @@ a { color: inherit; text-decoration: none; }
     .analytics-card { padding: 2.5rem 1.5rem 2rem; }
 }
 
-/* ---------- Add expense ---------- */
+/* ---------- Add expense / Edit expense ---------- */
 
-.add-expense-section {
+.add-expense-section,
+.edit-expense-section {
     padding: 4rem 2rem 5rem;
     min-height: calc(100vh - 64px);
     background: var(--paper);
 }
 
-.add-expense-container {
+.add-expense-container,
+.edit-expense-container {
     max-width: 480px;
     margin: 0 auto;
 }
 
-.add-expense-header {
+.add-expense-header,
+.edit-expense-header {
     text-align: center;
     margin-bottom: 2rem;
 }
 
-.add-expense-title {
+.add-expense-title,
+.edit-expense-title {
     font-family: var(--font-display);
     font-size: 2.25rem;
     color: var(--ink);
     margin: 0 0 0.5rem;
 }
 
-.add-expense-subtitle {
+.add-expense-subtitle,
+.edit-expense-subtitle {
     color: var(--ink-muted);
     font-size: 0.95rem;
     margin: 0;
 }
 
-.add-expense-card {
+.add-expense-card,
+.edit-expense-card {
     background: var(--paper-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -1217,7 +1246,8 @@ a { color: inherit; text-decoration: none; }
     margin-left: 0.25rem;
 }
 
-.add-expense-amount-wrap {
+.add-expense-amount-wrap,
+.edit-expense-amount-wrap {
     display: flex;
     align-items: stretch;
     border: 1px solid var(--border);
@@ -1227,11 +1257,13 @@ a { color: inherit; text-decoration: none; }
     transition: border-color 0.2s;
 }
 
-.add-expense-amount-wrap:focus-within {
+.add-expense-amount-wrap:focus-within,
+.edit-expense-amount-wrap:focus-within {
     border-color: var(--accent);
 }
 
-.add-expense-amount-prefix {
+.add-expense-amount-prefix,
+.edit-expense-amount-prefix {
     display: inline-flex;
     align-items: center;
     padding: 0 0.875rem;
@@ -1241,31 +1273,39 @@ a { color: inherit; text-decoration: none; }
     border-right: 1px solid var(--border);
 }
 
-.add-expense-amount-input {
+.add-expense-amount-input,
+.edit-expense-amount-input {
     border: none;
     border-radius: 0;
     background: transparent;
     flex: 1;
 }
 
-.add-expense-amount-input:focus {
+.add-expense-amount-input:focus,
+.edit-expense-amount-input:focus {
     border-color: transparent;
 }
 
-.add-expense-actions {
+.add-expense-actions,
+.edit-expense-actions {
     display: flex;
     gap: 0.75rem;
     margin-top: 1.5rem;
 }
 
 .add-expense-actions .btn-primary,
-.add-expense-actions .btn-ghost {
+.add-expense-actions .btn-ghost,
+.edit-expense-actions .btn-primary,
+.edit-expense-actions .btn-ghost {
     flex: 1;
     text-align: center;
 }
 
 @media (max-width: 640px) {
-    .add-expense-section { padding: 2.5rem 1rem 4rem; }
-    .add-expense-card { padding: 1.5rem; }
-    .add-expense-title { font-size: 1.85rem; }
+    .add-expense-section,
+    .edit-expense-section { padding: 2.5rem 1rem 4rem; }
+    .add-expense-card,
+    .edit-expense-card { padding: 1.5rem; }
+    .add-expense-title,
+    .edit-expense-title { font-size: 1.85rem; }
 }

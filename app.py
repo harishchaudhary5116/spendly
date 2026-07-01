@@ -6,7 +6,7 @@ import secrets
 import sqlite3
 from datetime import date, datetime, timedelta
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
 from database.db import (
     CATEGORIES,
@@ -15,9 +15,11 @@ from database.db import (
     create_user,
     init_db,
     seed_db,
+    update_expense,
 )
 from database.queries import (
     get_category_breakdown,
+    get_expense_by_id,
     get_recent_transactions,
     get_summary_stats,
     get_user_by_id,
@@ -357,9 +359,82 @@ def add_expense():
     return redirect(url_for("profile"))
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id, user_id)
+    if expense is None:
+        abort(404)
+
+    csrf_token = _get_csrf_token()
+
+    if request.method == "GET":
+        return render_template(
+            "edit_expense.html",
+            expense=expense,
+            categories=CATEGORIES,
+            amount=f"{expense['amount']:.2f}",
+            category=expense["category"],
+            expense_date=expense["date"],
+            description=expense["description"] or "",
+            csrf_token=csrf_token,
+        )
+
+    if not _csrf_valid(request.form.get("csrf_token")):
+        return redirect(url_for("edit_expense", id=id))
+
+    raw_amount = request.form.get("amount", "").strip()
+    raw_category = request.form.get("category", "").strip()
+    raw_date = request.form.get("date", "").strip()
+    raw_description = request.form.get("description", "").strip()
+
+    def _render_error(msg):
+        return render_template(
+            "edit_expense.html",
+            expense=expense,
+            categories=CATEGORIES,
+            error=msg,
+            amount=raw_amount,
+            category=raw_category or expense["category"],
+            expense_date=raw_date or expense["date"],
+            description=raw_description,
+            csrf_token=csrf_token,
+        )
+
+    try:
+        amount_val = float(raw_amount)
+    except ValueError:
+        return _render_error("Please enter a valid amount.")
+    if not math.isfinite(amount_val):
+        return _render_error("Please enter a valid amount.")
+    if amount_val <= 0 or amount_val > 9_999_999.99:
+        return _render_error(
+            "Amount must be greater than 0 and at most ₹9,999,999.99."
+        )
+
+    if raw_category not in CATEGORIES:
+        return _render_error("Please choose a valid category.")
+
+    parsed_date = _parse_date(raw_date)
+    if parsed_date is None or parsed_date > date.today():
+        return _render_error(
+            "Please enter a valid date that is not in the future."
+        )
+
+    description_val = raw_description[:200] if raw_description else None
+
+    update_expense(
+        id,
+        user_id,
+        amount_val,
+        raw_category,
+        parsed_date.isoformat(),
+        description_val,
+    )
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/delete")

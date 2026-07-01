@@ -90,7 +90,7 @@ def get_recent_transactions(user_id, limit=10, *, start_date=None, end_date=None
     conn = get_db()
     try:
         rows = conn.execute(
-            "SELECT date, description, category, amount "
+            "SELECT id, date, description, category, amount "
             "FROM expenses " + where + " "
             "ORDER BY date DESC, id DESC "
             "LIMIT ?",
@@ -101,6 +101,7 @@ def get_recent_transactions(user_id, limit=10, *, start_date=None, end_date=None
 
     return [
         {
+            "id": row["id"],
             "date": row["date"],
             "description": row["description"],
             "category": row["category"],
@@ -108,6 +109,30 @@ def get_recent_transactions(user_id, limit=10, *, start_date=None, end_date=None
         }
         for row in rows
     ]
+
+
+def get_expense_by_id(expense_id, user_id):
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT id, amount, category, date, description "
+            "FROM expenses "
+            "WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "id": row["id"],
+        "amount": row["amount"],
+        "category": row["category"],
+        "date": row["date"],
+        "description": row["description"],
+    }
 
 
 def get_category_breakdown(user_id, *, start_date=None, end_date=None):
